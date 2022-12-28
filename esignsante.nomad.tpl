@@ -1,8 +1,8 @@
-job "esignsante" {
+job "${env}" {
         datacenters = ["${datacenter}"]
         type = "service"
         vault {
-                policies = ["esignsante"]
+                policies = ["${env}"]
                 change_mode = "noop"
         }
 
@@ -42,7 +42,7 @@ job "esignsante" {
                                 cooldown = "${cooldown}"
                                 check "few_requests" {
                                         source = "prometheus"
-                                        query = "min(max(http_server_requests_seconds_max{_app='esignsante'}!= 0)by(instance))*max(process_cpu_usage{_app='esignsante'})"
+                                        query = "min(max(http_server_requests_seconds_max{_app='${env}'}!= 0)by(instance))*max(process_cpu_usage{_app='${env}'})"
                                         strategy "threshold" {
                                                 upper_bound = ${seuil_scale_in}
                                                 delta = -1
@@ -51,7 +51,7 @@ job "esignsante" {
 
                                 check "many_requests" {
                                         source = "prometheus"
-                                        query = "min(max(http_server_requests_seconds_max{_app='esignsante'}!= 0)by(instance))*max(process_cpu_usage{_app='esignsante'})"
+                                        query = "min(max(http_server_requests_seconds_max{_app='${env}'}!= 0)by(instance))*max(process_cpu_usage{_app='${env}'})"
                                         strategy "threshold" {
                                                 lower_bound = ${seuil_scale_out}
                                                 delta = 1
@@ -77,20 +77,20 @@ job "esignsante" {
                         template {
 data = <<EOH
 {
-   "signature": [ {{ $length := secrets "esignsante/metadata/signature" | len }}{{ $i := 1 }}{{ range secrets "esignsante/metadata/signature" }}
-{{ with secret (printf "esignsante/data/signature/%s" .) }}{{ .Data.data | explodeMap | toJSONPretty | indent 4 }} {{ if lt $i $length }}, {{ end }} {{ end }} {{ $i = add 1 $i }} {{ end }}
+   "signature": [ {{ $length := secrets "${env}/metadata/signature" | len }}{{ $i := 1 }}{{ range secrets "${env}/metadata/signature" }}
+{{ with secret (printf "${env}/data/signature/%s" .) }}{{ .Data.data | explodeMap | toJSONPretty | indent 4 }} {{ if lt $i $length }}, {{ end }} {{ end }} {{ $i = add 1 $i }} {{ end }}
   ],
-   "proof": [ {{ $length := secrets "esignsante/metadata/proof" | len }}{{ $i := 1 }}{{ range secrets "esignsante/metadata/proof" }}
-{{ with secret (printf "esignsante/data/proof/%s" .) }}{{ .Data.data | explodeMap | toJSONPretty | indent 4 }}{{ if lt $i $length }}, {{ end }} {{ end }} {{ $i = add 1 $i }} {{ end }}
+   "proof": [ {{ $length := secrets "${env}/metadata/proof" | len }}{{ $i := 1 }}{{ range secrets "${env}/metadata/proof" }}
+{{ with secret (printf "${env}/data/proof/%s" .) }}{{ .Data.data | explodeMap | toJSONPretty | indent 4 }}{{ if lt $i $length }}, {{ end }} {{ end }} {{ $i = add 1 $i }} {{ end }}
   ],
-   "signatureVerification": [ {{ $length := secrets "esignsante/metadata/signatureVerification" | len }}{{ $i := 1 }}{{ range secrets "esignsante/metadata/signatureVerification" }}
-{{ with secret (printf "esignsante/data/signatureVerification/%s" .) }}{{ .Data.data | explodeMap | toJSONPretty | indent 4 }}{{ if lt $i $length }}, {{ end }} {{ end }} {{ $i = add 1 $i }} {{ end }}
+   "signatureVerification": [ {{ $length := secrets "${env}/metadata/signatureVerification" | len }}{{ $i := 1 }}{{ range secrets "${env}/metadata/signatureVerification" }}
+{{ with secret (printf "${env}/data/signatureVerification/%s" .) }}{{ .Data.data | explodeMap | toJSONPretty | indent 4 }}{{ if lt $i $length }}, {{ end }} {{ end }} {{ $i = add 1 $i }} {{ end }}
   ],
-   "certificateVerification": [ {{ $length := secrets "esignsante/metadata/certificateVerification" | len }}{{ $i := 1 }}{{ range secrets "esignsante/metadata/certificateVerification" }}
-{{ with secret (printf "esignsante/data/certificateVerification/%s" .) }}{{ .Data.data | explodeMap | toJSONPretty | indent 4 }}{{ if lt $i $length }}, {{ end }} {{ end }} {{ $i = add 1 $i }} {{ end }}
+   "certificateVerification": [ {{ $length := secrets "${env}/metadata/certificateVerification" | len }}{{ $i := 1 }}{{ range secrets "${env}/metadata/certificateVerification" }}
+{{ with secret (printf "${env}/data/certificateVerification/%s" .) }}{{ .Data.data | explodeMap | toJSONPretty | indent 4 }}{{ if lt $i $length }}, {{ end }} {{ end }} {{ $i = add 1 $i }} {{ end }}
   ],
-   "ca": [ {{ $length := secrets "esignsante/metadata/ca" | len }}{{ $i := 1 }}{{ range secrets "esignsante/metadata/ca" }}
-{{ with secret (printf "esignsante/data/ca/%s" .) }}{{ .Data.data | explodeMap | toJSONPretty | indent 4 }}{{ if lt $i $length }}, {{ end }} {{ end }} {{ $i = add 1 $i }} {{ end }}
+   "ca": [ {{ $length := secrets "${env}/metadata/ca" | len }}{{ $i := 1 }}{{ range secrets "${env}/metadata/ca" }}
+{{ with secret (printf "${env}/data/ca/%s" .) }}{{ .Data.data | explodeMap | toJSONPretty | indent 4 }}{{ if lt $i $length }}, {{ end }} {{ end }} {{ $i = add 1 $i }} {{ end }}
   ]
 }
 EOH
@@ -104,7 +104,7 @@ spring.servlet.multipart.max-file-size=${spring_http_multipart_max_file_size}
 spring.servlet.multipart.max-request-size=${spring_http_multipart_max_request_size}
 config.secret=${config_secret}
 #config.crl.scheduling=${config_crl_scheduling}
-server.servlet.context-path=/esignsante/v1
+server.servlet.context-path=/${env}/v1
 com.sun.org.apache.xml.internal.security.ignoreLineBreaks=${ignore_line_breaks}
 management.endpoints.web.exposure.include=prometheus,metrics,health
 EOF
@@ -116,13 +116,13 @@ EOF
                         }
                         service {
                                 name = "$\u007BNOMAD_JOB_NAME\u007D"
-                                tags = ["urlprefix-/esignsante/v1/"]
+                                tags = ["urlprefix-/${env}/v1/"]
                                 canary_tags = ["canary instance to promote"]
                                 port = "http"
                                 check {
                                         type = "http"
                                         port = "http"
-                                        path = "/esignsante/v1/ca"
+                                        path = "/${env}/v1/ca"
 					header {
 						Accept = ["application/json"]
 					}
@@ -134,8 +134,8 @@ EOF
                         service {
                                 name = "metrics-exporter"
                                 port = "http"
-                                tags = ["_endpoint=/esignsante/v1/actuator/prometheus",
-                                                                "_app=esignsante",]
+                                tags = ["_endpoint=/${env}/v1/actuator/prometheus",
+                                                                "_app=${env}",]
                         }
                 }
 		
@@ -156,7 +156,7 @@ EOF
 #			template {
 #				data = <<EOH
 #LOGSTASH_HOST = "${logstash_host}"
-#ENVIRONMENT = "${datacenter}"
+#ENVIRONMENT = "${env}"
 #EOH
 #				destination = "local/file.env"
 #				env = true
