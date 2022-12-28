@@ -14,7 +14,7 @@ runner {
 }
 
 # An application to deploy.
-app "cybersante/esignsante" {
+app "cybersante/${var.env}" {
 
   # Build specifies how an application should be deployed.
   build {
