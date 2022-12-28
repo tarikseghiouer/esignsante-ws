@@ -1,4 +1,4 @@
-project = "cybersante/esignsante"
+project = "cybersante/${var.env}"
 
 # Labels can be specified for organizational purposes.
 labels = { "domaine" = "esignsante" }
@@ -162,4 +162,9 @@ variable "seuil_scale_out" {
 variable "logstash_host" {
   type = string
   default = ""
+}
+
+variable "env" {
+  type = string
+  default = "esignsante-integ"
 }
