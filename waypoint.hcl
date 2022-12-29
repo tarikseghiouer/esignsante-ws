@@ -56,6 +56,7 @@ app "cybersante/esignsante" {
         seuil_scale_in = var.seuil_scale_in
         seuil_scale_out = var.seuil_scale_out
         logstash_host = var.logstash_host
+        env = var.env
       })
     }
   }
