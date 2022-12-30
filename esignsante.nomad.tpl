@@ -6,16 +6,17 @@ job "${env}" {
                 change_mode = "noop"
         }
 
-       migrate {
-           max_parallel     = 1
-           health_check     = "checks"
-           min_healthy_time = "600s"
-           healthy_deadline = "10m"
-       }
+    
 
         group "esignsante-servers" {
                 count = "1"
-                restart {
+   		migrate {
+           		max_parallel     = 1
+           		health_check     = "checks"
+           		min_healthy_time = "600s"
+           		healthy_deadline = "10m"
+       		}
+		restart {
                         attempts = 3
                         delay = "60s"
                         interval = "1h"
