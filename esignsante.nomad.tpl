@@ -39,7 +39,7 @@ job "${env}" {
 
                 scaling {
                         enabled = true
-                        min     = ${min_count}
+                        min     = 2
                         max     = ${max_count}
 
 			policy {
