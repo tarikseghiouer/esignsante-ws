@@ -9,8 +9,8 @@ job "${env}" {
        migrate {
            max_parallel     = 1
            health_check     = "checks"
-           min_healthy_time = "5m"
-           healthy_deadline = "20m"
+           min_healthy_time = "600s"
+           healthy_deadline = "10m"
        }
 
         group "esignsante-servers" {
