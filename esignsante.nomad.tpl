@@ -9,7 +9,7 @@ job "${env}" {
     
 
         group "esignsante-servers" {
-                count = "1"
+                count = "2"
    		migrate {
            		max_parallel     = 1
            		health_check     = "checks"
@@ -39,7 +39,7 @@ job "${env}" {
 
                 scaling {
                         enabled = true
-                        min     = 2
+                        min     = ${min_count}
                         max     = ${max_count}
 
 			policy {
