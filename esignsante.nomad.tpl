@@ -9,7 +9,7 @@ job "${env}" {
     
 
         group "esignsante-servers" {
-                count = "2"
+                count = "1"
    		migrate {
            		max_parallel     = 1
            		health_check     = "checks"
