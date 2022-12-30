@@ -9,11 +9,11 @@ job "${env}" {
     
 
         group "esignsante-servers" {
-                count = "1"
+                count = "2"
    		migrate {
            		max_parallel     = 1
            		health_check     = "checks"
-           		min_healthy_time = "600s"
+           		min_healthy_time = "120s"
            		healthy_deadline = "10m"
        		}
 		restart {
